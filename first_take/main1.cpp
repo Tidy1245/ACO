@@ -19,17 +19,17 @@ typedef struct ant
     int location;
 } ant;
 
-double road[CITY][CITY];     //åŸå¸‚é–“è·¯æ®µè·é›¢
-double road_phe[CITY][CITY]; //è·¯æ®µè²»æ´›è’™ (æœ‰å‘åœ–ï¼Œéå°ç¨±çŸ©é™£)
-const int Q = 10;            //å¸¸æ•¸
-const int N = 50;            //èèŸ»æ•¸
-const double u = 0.3;        //è²»æ´›è’™è’¸ç™¼ä¿‚æ•¸
-const double p = 0.1;        //è½‰æ›è¦å‰‡æ©Ÿç‡
-int T = 700;                 //æ¸¬è©¦æ¬¡æ•¸
-city cities[CITY];           //åŸå¸‚
-ant ants[N];                 //èŸ»ç¾¤
+double road[CITY][CITY];     //«°¥«¶¡¸ô¬q¶ZÂ÷
+double road_phe[CITY][CITY]; //¸ô¬q¶O¬¥»X (¦³¦V¹Ï¡A«D¹ïºÙ¯x°})
+const int Q = 10;            //±`¼Æ
+const int N = 50;            //¿ÂÃÆ¼Æ
+const double u = 0.3;        //¶O¬¥»X»]µo«Y¼Æ
+const double p = 0.1;        //Âà´«³W«h¾÷²v
+int T = 700;                 //´ú¸Õ¦¸¼Æ
+city cities[CITY];           //«°¥«
+ant ants[N];                 //ÃÆ¸s
 
-void set_city() //è¨­å®šåŸå¸‚åº§æ¨™
+void set_city() //³]©w«°¥«®y¼Ğ
 {
     cities[0].x = 37;
     cities[0].y = 52;
@@ -134,7 +134,7 @@ void set_city() //è¨­å®šåŸå¸‚åº§æ¨™
     cities[50].x = 30;
     cities[50].y = 40;
 }
-void set_road() //è¨­å®šæ‰€æœ‰è·¯æ®µé•·
+void set_road() //³]©w©Ò¦³¸ô¬qªø
 {
     for (int i = 0; i < CITY; i++)
     {
@@ -144,11 +144,11 @@ void set_road() //è¨­å®šæ‰€æœ‰è·¯æ®µé•·
         }
     }
 }
-double get_dis(city a, city b) //å›å‚³å…©åŸå¸‚è·é›¢
+double get_dis(city a, city b) //¦^¶Ç¨â«°¥«¶ZÂ÷
 {
     return sqrt(pow(a.x - b.x, 2) + pow(a.y - b.y, 2));
 }
-void set_phe() //è¨­å®šè·¯æ®µè²»æ´›è’™
+void set_phe() //³]©w¸ô¬q¶O¬¥»X
 {
     for (int i = 0; i < CITY; i++)
     {
@@ -166,7 +166,7 @@ void set_phe() //è¨­å®šè·¯æ®µè²»æ´›è’™
         }
     }
 }
-void init_ant(int i) //åˆå§‹åŒ–èèŸ»è³‡è¨Šä¸¦è¨­å®šåˆå§‹ä½ç½®
+void init_ant(int i) //ªì©l¤Æ¿ÂÃÆ¸ê°T¨Ã³]©wªì©l¦ì¸m
 {
     ants[i].total_dis = 0;
     for (int j = 0; j < CITY; j++)
@@ -178,7 +178,7 @@ void init_ant(int i) //åˆå§‹åŒ–èèŸ»è³‡è¨Šä¸¦è¨­å®šåˆå§‹ä½ç½®
     ants[i].seq[x] = 0;
     ants[i].location = x;
 }
-bool unfinished(ant ants) //åˆ¤æ–·èèŸ»æ˜¯å¦æœ‰æœªæ‹œè¨ªçš„åŸå¸‚
+bool unfinished(ant ants) //§PÂ_¿ÂÃÆ¬O§_¦³¥¼«ô³Xªº«°¥«
 {
     for (int i = 0; i < CITY; i++)
     {
@@ -188,11 +188,11 @@ bool unfinished(ant ants) //åˆ¤æ–·èèŸ»æ˜¯å¦æœ‰æœªæ‹œè¨ªçš„åŸå¸‚
     return false;
 }
 
-double get_num(int from, int to) //[Ï„ i->j(t)]^Î±*[Î· i->j]^ÃŸ (ç›®å‰Î±,ÃŸéƒ½æ˜¯1)
+double get_num(int from, int to) //[£n i->j(t)]^£\*[£b i->j]^? (¥Ø«e£\,?³£¬O1)
 {
     return road_phe[from][to] * (Q / road[from][to]);
 }
-int choose_road(double *acc) //é¸æ“‡ä¸‹ä¸€æ¢è·¯
+int choose_road(double *acc) //¿ï¾Ü¤U¤@±ø¸ô
 {
     srand(time(NULL));
     double x = (double)rand() / (RAND_MAX + 1.0); // 0 <= x < 1
@@ -207,7 +207,7 @@ void update_phe(int *seq, double L)
 {
     for (int i = 0; i < CITY; i++)
         for (int j = 0; j < CITY; j++)
-            road_phe[i][j] *= u; //è²»æ´›è’™è’¸ç™¼
+            road_phe[i][j] *= u; //¶O¬¥»X»]µo
 
     int step = 0, from, to, i;
     for (i = 0; i < CITY; i++)
@@ -224,7 +224,7 @@ void update_phe(int *seq, double L)
         if (seq[i] == step)
         {
             to = i;
-            road_phe[from][to] += Q / L; //Î”Ï„ i->j
+            road_phe[from][to] += Q / L; //£G£n i->j
             from = i;
             step++;
         }
@@ -241,12 +241,12 @@ int main()
     set_road();
     set_phe();
 
-    int best_ant;                  //æœ€å¥½çš„èèŸ»
-    int best_seq[CITY];            //æœ€ä½³è·¯ç¨‹
-    double best_dis = 99999;       //æœ€çŸ­è·é›¢
-    double num_exp[CITY];          //[Ï„ i->j(t)]^Î±*[Î· i->j]^ÃŸ (iåˆ°jçš„æœŸæœ›å€¼)
-    double each_probability[CITY]; // P i->j  (iåˆ°jçš„æ©Ÿç‡)
-    double acc_probability[CITY];  //Î£P i->j (ç´¯ç©)
+    int best_ant;                  //³Ì¦nªº¿ÂÃÆ
+    int best_seq[CITY];            //³Ì¨Î¸ôµ{
+    double best_dis = 99999;       //³Ìµu¶ZÂ÷
+    double num_exp[CITY];          //[£n i->j(t)]^£\*[£b i->j]^? (i¨ìjªº´Á±æ­È)
+    double each_probability[CITY]; // P i->j  (i¨ìjªº¾÷²v)
+    double acc_probability[CITY];  //£UP i->j (²Ö¿n)
     int t = 0;
     while (t < T)
     {
@@ -256,12 +256,12 @@ int main()
         for (int i = 0; i < N; i++)
         {
             int step = 0;
-            //cout<<"ç¬¬ "<< t + 1 <<"æ¬¡å›åœˆå¤– / "; 
+            //cout<<"²Ä "<< t + 1 <<"¦¸¦^°é¥~ / "; 
             while (unfinished(ants[i]))
             {
-                //cout<<"ç¬¬ "<< t + 1 <<"æ¬¡å›åœˆå…§ / "; 
-                int f = ants[i].location; //ç•¶å‰ä½ç½®
-                double sum_exp = 0;       //Î£[Ï„ i->u(t)]^Î±*[Î· i->u]^ÃŸ (ç¸½æœŸæœ›å€¼)
+                //cout<<"²Ä "<< t + 1 <<"¦¸¦^°é¤º / "; 
+                int f = ants[i].location; //·í«e¦ì¸m
+                double sum_exp = 0;       //£U[£n i->u(t)]^£\*[£b i->u]^? (Á`´Á±æ­È)
 
                 for (int j = 0; j < CITY; j++)
                     acc_probability[j] = 0;
@@ -296,10 +296,10 @@ int main()
                         }
                     }
                 }
-                //ç§»å‹•
+                //²¾°Ê
                 step++;
                 ants[i].location = choose_road(acc_probability);
-                int g = ants[i].location; //æ–°ä½ç½®
+                int g = ants[i].location; //·s¦ì¸m
                 ants[i].seq[g] = step;
                 ants[i].total_dis += road[f][g];
             }
@@ -312,11 +312,11 @@ int main()
             }
         }
         t++;
-        cout << "ç¬¬" << t << "æ¬¡å®Œæˆ" << endl;
+        cout << "²Ä" << t << "¦¸§¹¦¨" << endl;
         update_phe(best_seq, best_dis);
     }
-    // cout << "ç¬¬ " << best_ant + 1 << " éš»èèŸ»" << endl;
-    cout << "è·é›¢ç‚º " << best_dis << endl;
+    // cout << "²Ä " << best_ant + 1 << " °¦¿ÂÃÆ" << endl;
+    cout << "¶ZÂ÷¬° " << best_dis << endl;
     int step = 0, i = 0;
     while (step < CITY)
     {
