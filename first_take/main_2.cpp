@@ -24,11 +24,15 @@ double road[CITY][CITY];     //城市間路段距離
 double road_phe[CITY][CITY]; //路段費洛蒙 (有向圖，非對稱矩陣)
 const int Q = 1;             //常數
 const int N = 25;            //螞蟻數
-const double u = 0.5;        //費洛蒙蒸發係數
-const double p = 0.1;        //轉換規則機率
-int T = 100;                //測試次數
+const double u = 0.8;        //費洛蒙蒸發係數
+const double p = 0.8;        //轉換規則比率
+int T = 50;                //測試次數
 city cities[CITY];           //城市
 ant ants[N];                 //蟻群
+
+double max_phe;
+double min_phe;
+int change = 0;
 
 void set_city() //設定城市座標
 {
@@ -162,7 +166,7 @@ void set_phe() //設定路段費洛蒙
             }
             else
             {
-                road_phe[i][j] = Q / L;
+                road_phe[i][j] = max_phe;
             }
         }
     }
@@ -185,11 +189,11 @@ bool unfinished(ant ants) //判斷螞蟻是否有未拜訪的城市
 
 double get_num(int from, int to) //[τ i->j(t)]^α*[η i->j]^ß (目前α,ß都是1)
 {
-    return road_phe[from][to] * (Q / road[from][to]);
+    return road_phe[from][to] * pow(Q / road[from][to], 2);
 }
 int choose_road(double *acc) //選擇下一條路
 {
-    srand(time(NULL));
+    // srand(time(NULL));
     double x = (double)rand() / (RAND_MAX + 1.0); // 0 <= x < 1
     for (int i = 0; i < CITY; i++)
     {
@@ -201,8 +205,15 @@ int choose_road(double *acc) //選擇下一條路
 void update_phe(int *seq, double L)
 {
     for (int i = 0; i < CITY; i++)
+    {
         for (int j = 0; j < CITY; j++)
+        {
             road_phe[i][j] *= u; //費洛蒙蒸發
+            if (road_phe[i][j] < min_phe)
+                road_phe[i][j] = min_phe;
+        }
+    }
+        
 
     int step = 0, from, to, i;
     for (i = 0; i < CITY; i++)
@@ -221,6 +232,10 @@ void update_phe(int *seq, double L)
         {
             to = i;
             road_phe[from][to] += Q / L; //Δτ i->j
+
+            if (road_phe[from][to] > max_phe)
+                road_phe[from][to] = max_phe;
+
             from = i;
 
             if (step == 0)
@@ -234,65 +249,100 @@ void update_phe(int *seq, double L)
         i %= CITY;
     }
 }
-void update_phe_part(ant ants, int step)
+void update_phe_part(ant a, int step)
 {
-
-    for (int i = 0; i < step; i++)
+    for (int i = 1; i <= step; i++)
     {
-        
         int from, to; //城市編號
         for (int j = 0; j < CITY; j++)
         {
-            if (ants.seq[j] == i)
-                from = j;
-            if (ants.seq[j] == i + 1)
+            if (a.seq[j] == i)
                 to = j;
+            if (a.seq[j] == i - 1)
+                from = j;
         }
-        road_phe[from][to] *= 0.8;
+        road_phe[from][to] *= u;
+        road_phe[from][to] += (1 - u) * (1 / road[from][to]);
 
+        if (road_phe[from][to] < min_phe)
+            road_phe[from][to] = min_phe;
         // road_phe[from][to] += Q / ants.total_dis;
     }
+}
+void update_phe_all(int *seq, double L)
+{
+    int step = 0, from, to, i;
+    for (i = 0; i < CITY; i++)
+    {
+        if (seq[i] == step)
+        {
+            from = i;
+            break;
+        }
+    }
+    i = 0;
+    step++;
+    while (1) //還沒回到起點就一直做
+    {
+        if (seq[i] == step)
+        {
+            to = i;
+            road_phe[from][to] += Q / L; //Δτ i->j
 
+            if (road_phe[from][to] > max_phe)
+                road_phe[from][to] = max_phe;
+
+            from = i;
+
+            if (step == 0)
+                break; //完成更新
+
+            step++;
+            step %= CITY;
+        }
+
+        i++;
+        i %= CITY;
+    }
 }
 
 int main()
 {
-    set_city();
-    set_road();
-    set_phe();
-
-    int best_ant;                  //最好的螞蟻
     int best_seq[CITY];            //最佳路程
-    double best_dis = 99999;       //最短距離
+    double best_dis = 1500;        //最短距離
     double num_exp[CITY];          //[τ i->j(t)]^α*[η i->j]^ß (i到j的期望值)
     double each_probability[CITY]; // P i->j  (i到j的機率)
     double acc_probability[CITY];  //ΣP i->j (累積)
     int t = 0;
 
+    max_phe = (1 / 1 - u) * (1 / best_dis);
+    set_city();
+    set_road();
+    set_phe();
+
+    srand(time(NULL));
     while (t < T)
     {
         // init_each_of_ants
         for (int c = 0; c < N; c++)
             init_ant(c);
 
-        srand(time(NULL));
         for (int c = 0; c < N; c++)
         {
             int min = 0;
             int max = CITY - 1;
-            int x = rand() % (max - min + 1) + min; // 
+            int x = rand() % (max - min + 1) + min; //
             ants[c].seq[x] = 0;
             ants[c].location = x;
             ants[c].first = x;
         }
 
-        /*for (int c = 0; c < N; c++)
-            cout << c << ": " << ants[c].location << endl;*/
+        max_phe = (1 / 1 - u) * (1 / best_dis);
+        min_phe = max_phe / (2 * CITY);
 
         // test_each_of_steps
         for (int i = 1;; i++, i %= CITY)
         {
-
             if (i == 0)
             {
                 for (int c = 0; c < N; c++)
@@ -345,9 +395,27 @@ int main()
                         }
                     }
                 }
-               
+
                 //移動
-                ants[c].location = choose_road(acc_probability);
+                //轉換規則
+                if (t < p * T) //探索
+                    ants[c].location = choose_road(acc_probability);
+                else //追隨
+                {
+                    double max_probability = 0;
+                    int max_location;
+                    for (int k = 0; k < CITY; k++)
+                    {
+                        if (acc_probability[k] > max_probability)
+                        {
+                            max_location = k;
+                            max_probability = acc_probability[k];
+                        }
+                    }
+
+                    ants[c].location = max_location;
+                }
+
                 int g = ants[c].location; //新位置
                 ants[c].seq[g] = i;       //第 i 步 (step)
                 ants[c].total_dis += road[f][g];
@@ -358,43 +426,91 @@ int main()
             }*/
 
             //局部更新費洛蒙
-            for (int c = 0; c < N; c++)
+            if (t < p * T)
             {
-                update_phe_part(ants[c], i);
-                // cout<<"i = "<<i<<endl;
+                for (int c = 0; c < N; c++)
+                    update_phe_part(ants[c], i);
             }
         }
-        //cout << "OK" << endl;
+        // cout << "OK" << endl;
         //一代螞蟻完成
         for (int c = 0; c < N; c++) //更新最佳路徑
         {
             if (best_dis > ants[c].total_dis)
             {
-                best_ant = c;
+                change++;
                 best_dis = ants[c].total_dis;
                 for (int j = 0; j < CITY; j++)
                     best_seq[j] = ants[c].seq[j];
             }
         }
         t++;
+
         //整體更新費洛蒙
-        update_phe(best_seq, best_dis);
+
+        if (t < 25)//迭代小於25的條件下，每隻螞蟻都做整體費洛蒙更新
+        {
+            for (int i = 0; i < CITY; i++)//費洛蒙蒸發
+            {
+                for (int j = 0; j < CITY; j++)
+                {
+                    road_phe[i][j] *= u;
+                    if (road_phe[i][j] < min_phe)
+                        road_phe[i][j] = min_phe;
+                }
+            }
+
+            for (int c = 0; c < N; c++)
+            {
+                update_phe_all(ants[c].seq, ants[c].total_dis);
+            }
+        }
+        else if(t >=25 && t < 75){
+            if(t % 5 == 0)
+                update_phe(best_seq, best_dis);
+        }
+        else if(t >= 75 && t < 150)
+        {
+            if(t % 3 == 0)
+                update_phe(best_seq, best_dis);
+        }
+        else if(t >= 150 && t < 300)
+        {
+            if(t % 2 == 0)
+                update_phe(best_seq, best_dis);
+        }
+        else
+            update_phe(best_seq, best_dis);
+
         cout << "第" << t << "次完成" << endl;
     }
 
     // cout << "第 " << best_ant + 1 << " 隻螞蟻" << endl;
     cout << "距離為 " << best_dis << endl;
+    cout << "改變了 " << change << " 次" << endl;
     int step = 0, i = 0;
     while (step < CITY)
     {
         if (best_seq[i] == step)
         {
-            cout << i + 1 << " -> ";
+            cout << i + 1 << "  ";
             step++;
         }
 
         i++;
         i %= CITY;
+    }
+    cout << endl;
+    cout << "max_phe = " << max_phe << endl;
+    cout << "min_phe = " << min_phe << endl;
+
+    for (int i = 0; i < 10; i++)
+    {
+        for (int j = 0; j < 10; j++)
+        {
+            cout << fixed << setprecision(9) << road_phe[i][j] << "  ";
+        }
+        cout << endl;
     }
     return 0;
 }
