@@ -4,143 +4,78 @@
 #include <cmath>
 #include <iomanip>
 #include <windows.h>
-#define CITY 51
+#include <time.h>
+#define CITY 11
 using namespace std;
 
 typedef struct city
 {
     double x;
     double y;
+    double weight;
 } city;
 
 typedef struct ant
 {
     double total_dis;
+    double charge;
     int seq[CITY];
     int location;
     int first;
 } ant;
 
-double road[CITY][CITY];     //åŸå¸‚é–“è·¯æ®µè·é›¢
-double road_phe[CITY][CITY]; //è·¯æ®µè²»æ´›è’™ (æœ‰å‘åœ–ï¼Œéå°ç¨±çŸ©é™£)
-const int Q = 1;             //å¸¸æ•¸
-const int N = 25;            //èèŸ»æ•¸
-const double u = 0.8;        //è²»æ´›è’™è’¸ç™¼ä¿‚æ•¸
-const double p = 0.8;        //è½‰æ›è¦å‰‡æ¯”ç‡
-int T = 50;                  //æ¸¬è©¦æ¬¡æ•¸
-city cities[CITY];           //åŸå¸‚
-ant ants[N];                 //èŸ»ç¾¤
+double road[CITY][CITY];     //«°¥«¶¡¸ô¬q¶ZÂ÷
+double road_phe[CITY][CITY]; //¸ô¬q¶O¬¥»X (¦³¦V¹Ï¡A«D¹ïºÙ¯x°})
+const int Q = 1;             //±`¼Æ
+const int N = 25;            //¿ÂÃÆ¼Æ
+const double u = 0.8;        //¶O¬¥»X»]µo«Y¼Æ
+const double p = 0.8;        //Âà´«³W«h¤ñ²v
+int T = 50;                  //´ú¸Õ¦¸¼Æ
+city cities[CITY];           //«°¥«
+ant ants[N];                 //ÃÆ¸s
 
 double max_phe;
 double min_phe;
 int change = 0;
+const int W = 31;
 
-void set_city() //è¨­å®šåŸå¸‚åº§æ¨™
+void set_city() //³]©w«°¥«®y¼Ğ
 {
-    cities[0].x = 37;
-    cities[0].y = 52;
-    cities[1].x = 49;
-    cities[1].y = 49;
+    cities[0].x = 0;
+    cities[0].y = 0;
+    cities[0].weight = 1;
+    cities[1].x = 37;
+    cities[1].y = 52;
+    cities[1].weight = 5;
     cities[2].x = 52;
     cities[2].y = 64;
-    cities[3].x = 20;
-    cities[3].y = 26;
-    cities[4].x = 40;
-    cities[4].y = 30;
-    cities[5].x = 21;
-    cities[5].y = 47;
-    cities[6].x = 17;
-    cities[6].y = 63;
-    cities[7].x = 31;
-    cities[7].y = 62;
-    cities[8].x = 52;
-    cities[8].y = 33;
-    cities[9].x = 51;
-    cities[9].y = 21;
-    cities[10].x = 42;
-    cities[10].y = 41;
-    cities[11].x = 31;
-    cities[11].y = 32;
-    cities[12].x = 5;
-    cities[12].y = 25;
-    cities[13].x = 12;
-    cities[13].y = 42;
-    cities[14].x = 36;
-    cities[14].y = 16;
-    cities[15].x = 52;
-    cities[15].y = 41;
-    cities[16].x = 27;
-    cities[16].y = 23;
-    cities[17].x = 17;
-    cities[17].y = 33;
-    cities[18].x = 13;
-    cities[18].y = 13;
-    cities[19].x = 57;
-    cities[19].y = 58;
-    cities[20].x = 62;
-    cities[20].y = 42;
-    cities[21].x = 42;
-    cities[21].y = 57;
-    cities[22].x = 16;
-    cities[22].y = 57;
-    cities[23].x = 8;
-    cities[23].y = 52;
-    cities[24].x = 7;
-    cities[24].y = 38;
-    cities[25].x = 27;
-    cities[25].y = 68;
-    cities[26].x = 30;
-    cities[26].y = 48;
-    cities[27].x = 43;
-    cities[27].y = 67;
-    cities[28].x = 58;
-    cities[28].y = 48;
-    cities[29].x = 58;
-    cities[29].y = 27;
-    cities[30].x = 37;
-    cities[30].y = 69;
-    cities[31].x = 38;
-    cities[31].y = 46;
-    cities[32].x = 46;
-    cities[32].y = 10;
-    cities[33].x = 61;
-    cities[33].y = 33;
-    cities[34].x = 62;
-    cities[34].y = 63;
-    cities[35].x = 63;
-    cities[35].y = 69;
-    cities[36].x = 32;
-    cities[36].y = 22;
-    cities[37].x = 45;
-    cities[37].y = 35;
-    cities[38].x = 59;
-    cities[38].y = 15;
-    cities[39].x = 5;
-    cities[39].y = 6;
-    cities[40].x = 10;
-    cities[40].y = 17;
-    cities[41].x = 21;
-    cities[41].y = 10;
-    cities[42].x = 5;
-    cities[42].y = 64;
-    cities[43].x = 30;
-    cities[43].y = 15;
-    cities[44].x = 39;
-    cities[44].y = 10;
-    cities[45].x = 32;
-    cities[45].y = 39;
-    cities[46].x = 25;
-    cities[46].y = 32;
-    cities[47].x = 25;
-    cities[47].y = 55;
-    cities[48].x = 48;
-    cities[48].y = 28;
-    cities[49].x = 56;
-    cities[49].y = 37;
-    cities[50].x = 30;
-    cities[50].y = 40;
+    cities[2].weight = 3;
+    cities[3].x = 40;
+    cities[3].y = 30;
+    cities[3].weight = 5;
+    cities[4].x = 17;
+    cities[4].y = 63;
+    cities[4].weight = 3;
+    cities[5].x = 52;
+    cities[5].y = 33;
+    cities[5].weight = 1;
+    cities[6].x = 42;
+    cities[6].y = 41;
+    cities[6].weight = 1;
+    cities[7].x = 5;
+    cities[7].y = 25;
+    cities[7].weight = 4;
+    cities[8].x = 36;
+    cities[8].y = 16;
+    cities[8].weight = 2;
+    cities[9].x = 27;
+    cities[9].y = 23;
+    cities[9].weight = 5;
+    cities[10].x = 13;
+    cities[10].y = 13;
+    cities[10].weight = 1;
 }
-void set_road() //è¨­å®šæ‰€æœ‰è·¯æ®µé•·
+void set_road() //³]©w©Ò¦³¸ô¬qªø
 {
     for (int i = 0; i < CITY; i++)
     {
@@ -150,11 +85,11 @@ void set_road() //è¨­å®šæ‰€æœ‰è·¯æ®µé•·
         }
     }
 }
-double get_dis(city a, city b) //å›å‚³å…©åŸå¸‚è·é›¢
+double get_dis(city a, city b) //¦^¶Ç¨â«°¥«¶ZÂ÷
 {
     return sqrt(pow(a.x - b.x, 2) + pow(a.y - b.y, 2));
 }
-void set_phe() //è¨­å®šè·¯æ®µè²»æ´›è’™
+void set_phe() //³]©w¸ô¬q¶O¬¥»X
 {
     for (int i = 0; i < CITY; i++)
     {
@@ -172,27 +107,22 @@ void set_phe() //è¨­å®šè·¯æ®µè²»æ´›è’™
         }
     }
 }
-void init_ant(int i) //åˆå§‹åŒ–èèŸ»è³‡è¨Š
+void init_ant(int i) //ªì©l¤Æ¿ÂÃÆ¸ê°T¨Ã³]©wªì©l¦ì¸m
 {
     ants[i].total_dis = 0;
+    ants[i].charge = 0;
+    ants[i].location = 0;
     for (int j = 0; j < CITY; j++)
         ants[i].seq[j] = -1;
-}
-bool unfinished(ant ants) //åˆ¤æ–·èèŸ»æ˜¯å¦æœ‰æœªæ‹œè¨ªçš„åŸå¸‚
-{
-    for (int i = 0; i < CITY; i++)
-    {
-        if (ants.seq[i] == -1)
-            return true;
-    }
-    return false;
+    ants[i].seq[0] = 0;
+    ants[i].first = 0;
 }
 
-double get_num(int from, int to) //[Ï„ i->j(t)]^Î±*[Î· i->j]^ÃŸ (ç›®å‰Î±,ÃŸéƒ½æ˜¯1)
+double get_num(int from, int to) //[£n i->j(t)]^£\*[£b i->j]^? (¥Ø«e£\,?³£¬O1)
 {
-    return road_phe[from][to] * pow(Q / road[from][to], 2);
+    return (road_phe[from][to] * pow(Q / road[from][to], 2) * (cities[to].weight));
 }
-int choose_road(double *acc) //é¸æ“‡ä¸‹ä¸€æ¢è·¯
+int choose_road(double *acc) //¿ï¾Ü¤U¤@±ø¸ô
 {
     // srand(time(NULL));
     double x = (double)rand() / (RAND_MAX + 1.0); // 0 <= x < 1
@@ -209,7 +139,7 @@ void update_phe(int *seq, double L)
     {
         for (int j = 0; j < CITY; j++)
         {
-            road_phe[i][j] *= u; //è²»æ´›è’™è’¸ç™¼
+            road_phe[i][j] *= u; //¶O¬¥»X»]µo
             if (road_phe[i][j] < min_phe)
                 road_phe[i][j] = min_phe;
         }
@@ -227,12 +157,12 @@ void update_phe(int *seq, double L)
     }
     i = 0;
     step++;
-    while (1) //é‚„æ²’å›åˆ°èµ·é»å°±ä¸€ç›´åš
+    while (1) //ÁÙ¨S¦^¨ì°_ÂI´N¤@ª½°µ
     {
         if (seq[i] == step)
         {
             to = i;
-            road_phe[from][to] += Q / L; //Î”Ï„ i->j
+            road_phe[from][to] += Q / L; //£G£n i->j
 
             if (road_phe[from][to] > max_phe)
                 road_phe[from][to] = max_phe;
@@ -240,7 +170,7 @@ void update_phe(int *seq, double L)
             from = i;
 
             if (step == 0)
-                break; //å®Œæˆæ›´æ–°
+                break; //§¹¦¨§ó·s
 
             step++;
             step %= CITY;
@@ -254,7 +184,7 @@ void update_phe_part(ant a, int step)
 {
     for (int i = 1; i <= step; i++)
     {
-        int from, to; //åŸå¸‚ç·¨è™Ÿ
+        int from, to; //«°¥«½s¸¹
         for (int j = 0; j < CITY; j++)
         {
             if (a.seq[j] == i)
@@ -283,12 +213,12 @@ void update_phe_all(int *seq, double L)
     }
     i = 0;
     step++;
-    while (1) //é‚„æ²’å›åˆ°èµ·é»å°±ä¸€ç›´åš
+    while (1) //ÁÙ¨S¦^¨ì°_ÂI´N¤@ª½°µ
     {
         if (seq[i] == step)
         {
             to = i;
-            road_phe[from][to] += Q / L; //Î”Ï„ i->j
+            road_phe[from][to] += Q / L; //£G£n i->j
 
             if (road_phe[from][to] > max_phe)
                 road_phe[from][to] = max_phe;
@@ -296,7 +226,7 @@ void update_phe_all(int *seq, double L)
             from = i;
 
             if (step == 0)
-                break; //å®Œæˆæ›´æ–°
+                break; //§¹¦¨§ó·s
 
             step++;
             step %= CITY;
@@ -310,14 +240,17 @@ void update_phe_all(int *seq, double L)
 int main()
 {
     DWORD star_time = GetTickCount();
-    int best_seq[CITY];            //æœ€ä½³è·¯ç¨‹
-    double best_dis = 1500;        //æœ€çŸ­è·é›¢
-    double num_exp[CITY];          //[Ï„ i->j(t)]^Î±*[Î· i->j]^ÃŸ (iåˆ°jçš„æœŸæœ›å€¼)
-    double each_probability[CITY]; // P i->j  (iåˆ°jçš„æ©Ÿç‡)
-    double acc_probability[CITY];  //Î£P i->j (ç´¯ç©)
+    int best_seq[CITY];            //³Ì¨Î¸ôµ{
+    double best_dis = 1500;        //³Ìµu¶ZÂ÷
+    double num_exp[CITY];          //[£n i->j(t)]^£\*[£b i->j]^? (i¨ìjªº´Á±æ­È)
+    double each_probability[CITY]; // P i->j  (i¨ìjªº¾÷²v)
+    double acc_probability[CITY];  //£UP i->j (²Ö¿n)
     int t = 0;
 
+    int best_charge = 100000;
+
     max_phe = (1 / 1 - u) * (1 / best_dis);
+
     set_city();
     set_road();
     set_phe();
@@ -328,19 +261,13 @@ int main()
         // init_each_of_ants
         for (int c = 0; c < N; c++)
             init_ant(c);
-
-        for (int c = 0; c < N; c++)
-        {
-            int min = 0;
-            int max = CITY - 1;
-            int x = rand() % (max - min + 1) + min; //
-            ants[c].seq[x] = 0;
-            ants[c].location = x;
-            ants[c].first = x;
-        }
+        
 
         max_phe = (1 / 1 - u) * (1 / best_dis);
         min_phe = max_phe / (2 * CITY);
+
+        int bag[N];
+        for (int c = 0; c < N; c++) bag[c] = W;
 
         // test_each_of_steps
         for (int i = 1;; i++, i %= CITY)
@@ -352,17 +279,18 @@ int main()
                     int to = ants[c].first;
                     int from = ants[c].location;
                     ants[c].total_dis += road[from][to];
+                    ants[c].charge += (bag[c] * road[from][to]);
+                    bag[c] -= cities[to].weight;
                 }
                 break;
             }
-            // æ¯éš»èèŸ»ç§»å‹•ä¸€æ­¥
+            // ¨C°¦¿ÂÃÆ²¾°Ê¤@¨B
 
             for (int c = 0; c < N; c++)
             {
+                int f = ants[c].location; //·í«e¦ì¸m
 
-                int f = ants[c].location; //ç•¶å‰ä½ç½®
-
-                double sum_exp = 0; //Î£[Ï„ i->u(t)]^Î±*[Î· i->u]^ÃŸ (ç¸½æœŸæœ›å€¼)
+                double sum_exp = 0; //£U[£n i->u(t)]^£\*[£b i->u]^? (Á`´Á±æ­È)
 
                 for (int j = 0; j < CITY; j++)
                     acc_probability[j] = 0;
@@ -398,11 +326,11 @@ int main()
                     }
                 }
 
-                //ç§»å‹•
-                //è½‰æ›è¦å‰‡
-                if (t < p * T) //æ¢ç´¢
+                //²¾°Ê
+                //Âà´«³W«h
+                if (t < p * T) //±´¯Á
                     ants[c].location = choose_road(acc_probability);
-                else //è¿½éš¨
+                else //°lÀH
                 {
                     double max_probability = 0;
                     int max_location;
@@ -418,41 +346,45 @@ int main()
                     ants[c].location = max_location;
                 }
 
-                int g = ants[c].location; //æ–°ä½ç½®
-                ants[c].seq[g] = i;       //ç¬¬ i æ­¥ (step)
+                int g = ants[c].location; //·s¦ì¸m
+                ants[c].seq[g] = i;       //²Ä i ¨B (step)
                 ants[c].total_dis += road[f][g];
+                ants[c].charge += (bag[c] * road[f][g]);
+                bag[c] -= cities[g].weight;
             }
             /*for (int c = 0; c < N; c++)
             {
                 cout<<c<<": "<<ants[c].total_dis<<endl;
             }*/
 
-            //å±€éƒ¨æ›´æ–°è²»æ´›è’™
+            //§½³¡§ó·s¶O¬¥»X
             if (t < p * T)
             {
                 for (int c = 0; c < N; c++)
                     update_phe_part(ants[c], i);
             }
         }
-        // cout << "OK" << endl;
-        //ä¸€ä»£èèŸ»å®Œæˆ
-        for (int c = 0; c < N; c++) //æ›´æ–°æœ€ä½³è·¯å¾‘
+        
+         //cout << t << endl;
+        //¤@¥N¿ÂÃÆ§¹¦¨
+        for (int c = 0; c < N; c++) //§ó·s³Ì¨Î¸ô®|
         {
-            if (best_dis > ants[c].total_dis)
+            if (best_charge > ants[c].charge)
             {
-                change++;
+                best_charge = ants[c].charge;
                 best_dis = ants[c].total_dis;
                 for (int j = 0; j < CITY; j++)
                     best_seq[j] = ants[c].seq[j];
             }
         }
+        
         t++;
 
-        //æ•´é«”æ›´æ–°è²»æ´›è’™
-
-        if (t < 50)//è¿­ä»£å°æ–¼çš„æ¢ä»¶ä¸‹ï¼Œæ¯éš»èèŸ»éƒ½åšæ•´é«”è²»æ´›è’™æ›´æ–°
+        //¾ãÅé§ó·s¶O¬¥»X
+        
+        if (t < 50)//­¡¥N¤p©óªº±ø¥ó¤U¡A¨C°¦¿ÂÃÆ³£°µ¾ãÅé¶O¬¥»X§ó·s
         {
-            for (int i = 0; i < CITY; i++)//è²»æ´›è’™è’¸ç™¼
+            for (int i = 0; i < CITY; i++)//¶O¬¥»X»]µo
             {
                 for (int j = 0; j < CITY; j++)
                 {
@@ -467,42 +399,27 @@ int main()
                 update_phe_all(ants[c].seq, ants[c].total_dis);
             }
         }
-        /*else if(t >=25 && t < 75){
-            if(t % 5 == 0)
-                update_phe(best_seq, best_dis);
-        }
-        else if(t >= 75 && t < 150)
-        {
-            if(t % 3 == 0)
-                update_phe(best_seq, best_dis);
-        }
-        else if(t >= 150 && t < 300)
-        {
-            if(t % 2 == 0)
-                update_phe(best_seq, best_dis);
-        }*/
         else
             update_phe(best_seq, best_dis);
-
-        cout << "ç¬¬" << t << "æ¬¡å®Œæˆ" << endl;
+        
     }
-
-    // cout << "ç¬¬ " << best_ant + 1 << " éš»èèŸ»" << endl;
-    cout << "è·é›¢ç‚º " << best_dis << endl;
-    cout << "æ”¹è®Šäº† " << change << " æ¬¡" << endl;
+    
+    cout<<best_charge<<endl;
+    cout<<best_dis<<endl;
+ 
     int step = 0, i = 0;
     while (step < CITY)
     {
         if (best_seq[i] == step)
         {
-            cout << i + 1 << "  ";
+            cout << i << "  ";
             step++;
         }
 
         i++;
         i %= CITY;
     }
-    cout << endl;
+    cout <<"0"<<endl;
     cout << "max_phe = " << max_phe << endl;
     cout << "min_phe = " << min_phe << endl;
 
@@ -515,6 +432,7 @@ int main()
         cout << endl;
     }*/
     DWORD end_time = GetTickCount();
-    cout << "é€™å€‹ç¨‹å¼åŸ·è¡Œæ™‚é–“ç‚º " << (end_time - star_time) << "ms." << endl;
+    cout <<  (end_time - star_time) << endl;
+    cout << (double)clock() / CLOCKS_PER_SEC << "s" << endl;
     return 0; 
 }
